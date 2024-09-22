@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const indexRouter = require("./routes/index.js");
 
 const { PORT = 3001 } = process.env;
 
@@ -12,6 +13,8 @@ mongoose
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err.message);
   });
+
+app.use("/", indexRouter);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
