@@ -7,6 +7,13 @@ const { PORT = 3001 } = process.env;
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  req.user = {
+    _id: "66f15f8b0cd9ca6ecdd82474",
+  };
+  next();
+});
+
 app.use("/", indexRouter);
 
 // Handle non-existent resources

@@ -16,9 +16,14 @@ const getItems = async (req, res) => {
 // Controller to create a new clothing item
 const createItem = async (req, res) => {
   try {
-    const { name, weather, imageUrl, owner } = req.body;
+    const { name, weather, imageUrl } = req.body;
 
-    const clothingItem = new ClothingItem({ name, weather, imageUrl, owner });
+    const clothingItem = new ClothingItem({
+      name,
+      weather,
+      imageUrl,
+      owner: req.user._id,
+    });
     await clothingItem.save();
 
     res.status(201).send(clothingItem);
