@@ -70,8 +70,64 @@ const deleteItem = async (req, res) => {
   }
 };
 
+//Controler to handle likes
+
+const likeItem = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user._id;
+
+    const updatedItem = await ClothingItem.findByIdAndUpdate(
+      itemId,
+      { $addToSet: { likes: userId } },
+      { new: true }
+    ).orFail(new Error("Clothing item not found"));
+
+    res.status(200).send(updatedItem);
+  } catch (err) {
+    console.error(err);
+    if (err.message === "Clothing item not found") {
+      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
+    } else if (err.name === "CastError") {
+      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
+  }
+};
+
+const dislikeItem = async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user._id;
+
+    const updatedItem = await ClothingItem.findByIdAndUpdate(
+      itemId,
+      { $pull: { likes: userId } },
+      { new: true }
+    ).orFail(new Error("Clothing item not found"));
+
+    res.status(200).send(updatedItem);
+  } catch (err) {
+    console.error(err);
+    if (err.message === "Clothing item not found") {
+      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
+    } else if (err.name === "CastError") {
+      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
+  }
+};
+
 module.exports = {
   getItems,
   createItem,
   deleteItem,
+  likeItem,
+  dislikeItem,
 };
