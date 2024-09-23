@@ -70,7 +70,7 @@ const deleteItem = async (req, res) => {
   }
 };
 
-//Controler to handle likes
+// Controler to handle likes
 
 const likeItem = async (req, res) => {
   try {

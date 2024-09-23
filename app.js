@@ -1,7 +1,13 @@
 const express = require("express");
 const app = express();
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+} = require("./utils/errors");
+
 const mongoose = require("mongoose");
-const indexRouter = require("./routes/index.js");
+const indexRouter = require("./routes/index");
 
 const { PORT = 3001 } = process.env;
 
