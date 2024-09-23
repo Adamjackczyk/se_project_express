@@ -1,4 +1,9 @@
 const User = require("../models/user");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 
 // Controller to get all users
 const getUsers = async (req, res) => {
@@ -6,7 +11,10 @@ const getUsers = async (req, res) => {
     const users = await User.find();
     res.status(200).send(users);
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    console.error(err);
+    res
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: "An error has occurred on the server." });
   }
 };
 
@@ -14,15 +22,22 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).send({ message: "User not found" });
-    }
+    const user = await User.findById(userId).orFail(
+      new Error("User not found")
+    );
 
     res.status(200).send(user);
   } catch (err) {
-    res.status(400).send({ error: "Invalid user ID format" });
+    console.error(err);
+    if (err.message === "User not found") {
+      res.status(NOT_FOUND).send({ message: "User not found" });
+    } else if (err.name === "CastError") {
+      res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
   }
 };
 
@@ -36,7 +51,14 @@ const createUser = async (req, res) => {
 
     res.status(201).send(user);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    console.error(err);
+    if (err.name === "ValidationError") {
+      res.status(BAD_REQUEST).send({ message: err.message });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
   }
 };
 

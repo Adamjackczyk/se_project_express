@@ -21,6 +21,13 @@ app.use((req, res, next) => {
   res.status(404).send({ message: "Requested resource not found" });
 });
 
+app.use((err, req, res, next) => {
+  console.error(err);
+  res
+    .status(INTERNAL_SERVER_ERROR)
+    .send({ message: "An error has occurred on the server." });
+});
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {

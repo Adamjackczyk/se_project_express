@@ -1,4 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 
 // Controller to get all clothing items
 const getItems = async (req, res) => {
@@ -9,7 +14,10 @@ const getItems = async (req, res) => {
 
     res.status(200).send(items);
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    console.error(err);
+    res
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: "An error has occurred on the server." });
   }
 };
 
@@ -22,13 +30,20 @@ const createItem = async (req, res) => {
       name,
       weather,
       imageUrl,
-      owner: req.user._id,
+      owner: req.user._id, // Assign owner from middleware
     });
     await clothingItem.save();
 
     res.status(201).send(clothingItem);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    console.error(err);
+    if (err.name === "ValidationError") {
+      res.status(BAD_REQUEST).send({ message: err.message });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
   }
 };
 
@@ -36,15 +51,22 @@ const createItem = async (req, res) => {
 const deleteItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const deletedItem = await ClothingItem.findByIdAndDelete(itemId);
-
-    if (!deletedItem) {
-      return res.status(404).send({ message: "Clothing item not found" });
-    }
+    const deletedItem = await ClothingItem.findByIdAndDelete(itemId).orFail(
+      new Error("Clothing item not found")
+    );
 
     res.status(200).send({ message: "Clothing item deleted successfully" });
   } catch (err) {
-    res.status(400).send({ error: "Invalid item ID format" });
+    console.error(err);
+    if (err.message === "Clothing item not found") {
+      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
+    } else if (err.name === "CastError") {
+      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
+    } else {
+      res
+        .status(INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
+    }
   }
 };
 
