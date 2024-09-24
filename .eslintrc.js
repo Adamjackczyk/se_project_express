@@ -21,6 +21,6 @@ module.exports = {
   },
   rules: {
     "no-console": ["warn", { allow: ["error"] }],
-    camelcase: ["error", { allow: ["_id"] }],
+    "no-underscore-dangle": ["warn", { allow: ["_id"] }],
   },
 };

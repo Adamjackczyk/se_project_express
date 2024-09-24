@@ -1,10 +1,8 @@
 const express = require("express");
+
 const app = express();
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-} = require("./utils/errors");
+
+const { INTERNAL_SERVER_ERROR, NOT_FOUND } = require("./utils/errors");
 
 const mongoose = require("mongoose");
 const indexRouter = require("./routes/index");
@@ -23,8 +21,8 @@ app.use((req, res, next) => {
 app.use("/", indexRouter);
 
 // Handle non-existent resources
-app.use((req, res, next) => {
-  res.status(404).send({ message: "Requested resource not found" });
+app.use((req, res) => {
+  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 
 app.use((err, req, res, next) => {
