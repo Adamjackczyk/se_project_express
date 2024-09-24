@@ -1,10 +1,11 @@
 const express = require("express");
 
+const mongoose = require("mongoose");
+
 const app = express();
 
 const { INTERNAL_SERVER_ERROR, NOT_FOUND } = require("./utils/errors");
 
-const mongoose = require("mongoose");
 const indexRouter = require("./routes/index");
 
 const { PORT = 3001 } = process.env;
@@ -25,7 +26,7 @@ app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error(err);
   res
     .status(INTERNAL_SERVER_ERROR)

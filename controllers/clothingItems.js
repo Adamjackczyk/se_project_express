@@ -55,7 +55,9 @@ const deleteItem = async (req, res) => {
       new Error("Clothing item not found")
     );
 
-    res.status(200).send({ message: "Clothing item deleted successfully" });
+    res
+      .status(200)
+      .send({ message: "Clothing item deleted successfully", deletedItem });
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
