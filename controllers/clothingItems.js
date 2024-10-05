@@ -4,9 +4,7 @@ const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
-  CONFLICT,
   FORBIDDEN,
-  UNAUTHORIZED,
 } = require("../utils/errors");
 
 // Controller to get all clothing items

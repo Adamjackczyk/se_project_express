@@ -1,7 +1,7 @@
 const express = require("express");
-
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 const app = express();
 
 const { INTERNAL_SERVER_ERROR, NOT_FOUND } = require("./utils/errors");
