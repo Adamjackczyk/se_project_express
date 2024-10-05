@@ -119,7 +119,7 @@ const likeItem = async (req, res) => {
       { new: true }
     ).orFail(new Error("Clothing item not found"));
 
-    res.status(200).send(updatedItem);
+    return res.status(200).send(updatedItem);
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
@@ -127,7 +127,7 @@ const likeItem = async (req, res) => {
     } else if (err.name === "CastError") {
       res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
     } else {
-      res
+      return res
         .status(INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     }
