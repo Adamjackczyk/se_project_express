@@ -1,8 +1,12 @@
+const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 const {
   BAD_REQUEST,
   NOT_FOUND,
   INTERNAL_SERVER_ERROR,
+  CONFLICT,
+  FORBIDDEN,
+  UNAUTHORIZED,
 } = require("../utils/errors");
 
 // Controller to get all clothing items
@@ -51,24 +55,56 @@ const createItem = async (req, res) => {
 const deleteItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const deletedItem = await ClothingItem.findByIdAndDelete(itemId).orFail(
-      new Error("Clothing item not found")
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      console.log("Invalid item ID format:", itemId);
+      return res
+        .status(BAD_REQUEST)
+        .send({ message: "Invalid item ID format." });
+    }
+
+    // Find the clothing item by ID
+    const item = await ClothingItem.findById(itemId);
+
+    if (!item) {
+      console.log("Clothing item not found for ID:", itemId);
+      return res
+        .status(NOT_FOUND)
+        .send({ message: "Clothing item not found." });
+    }
+
+    // Check if the logged-in user is the owner of the item
+    if (item.owner.toString() !== req.user._id) {
+      console.log(
+        `User ${req.user._id} does not have permission to delete item ${itemId}`
+      );
+      return res
+        .status(FORBIDDEN)
+        .send({ message: "You do not have permission to delete this item." });
+    }
+
+    // Proceed to delete the item
+    await ClothingItem.findByIdAndDelete(itemId);
+
+    console.log(
+      `Clothing item ${itemId} deleted successfully by user ${req.user._id}`
     );
+    res.status(200).send({ message: "Clothing item deleted successfully." });
+  } catch (err) {
+    console.error("Delete Item Error:", err);
+
+    // Handle CastError specifically
+    if (err.name === "CastError") {
+      console.log("Caught CastError.");
+      return res
+        .status(BAD_REQUEST)
+        .send({ message: "Invalid item ID format." });
+    }
 
     res
-      .status(200)
-      .send({ message: "Clothing item deleted successfully", deletedItem });
-  } catch (err) {
-    console.error(err);
-    if (err.message === "Clothing item not found") {
-      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
-    } else if (err.name === "CastError") {
-      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
-    } else {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
-    }
+      .status(INTERNAL_SERVER_ERROR)
+      .send({ message: "An error has occurred on the server." });
   }
 };
 
