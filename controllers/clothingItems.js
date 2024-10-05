@@ -88,7 +88,9 @@ const deleteItem = async (req, res) => {
     console.log(
       `Clothing item ${itemId} deleted successfully by user ${req.user._id}`
     );
-    res.status(200).send({ message: "Clothing item deleted successfully." });
+    return res
+      .status(200)
+      .send({ message: "Clothing item deleted successfully." });
   } catch (err) {
     console.error("Delete Item Error:", err);
 
