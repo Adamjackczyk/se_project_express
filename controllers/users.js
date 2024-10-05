@@ -73,7 +73,7 @@ const createUser = async (req, res) => {
     delete userResponse.password;
 
     // Send the created user as response
-    res.status(201).send(userResponse);
+    return res.status(201).send(userResponse);
   } catch (err) {
     console.error(err);
 
@@ -88,7 +88,7 @@ const createUser = async (req, res) => {
     }
 
     // Handle other server errors
-    res
+    return res
       .status(INTERNAL_SERVER_ERROR)
       .send({ message: "An error has occurred on the server." });
   }
@@ -147,10 +147,10 @@ const getCurrentUser = async (req, res) => {
     }
 
     // Send the user data as the response
-    res.status(200).send(user);
+    return res.status(200).send(user);
   } catch (err) {
     console.error(err);
-    res
+    return res
       .status(INTERNAL_SERVER_ERROR)
       .send({ message: "An error has occurred on the server." });
   }
@@ -183,13 +183,13 @@ const updateUser = async (req, res) => {
       return res.status(NOT_FOUND).send({ message: "User not found" });
     }
 
-    res.status(200).send(updatedUser);
+    return res.status(200).send(updatedUser);
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {
       return res.status(BAD_REQUEST).send({ message: err.message });
     }
-    res
+    return res
       .status(INTERNAL_SERVER_ERROR)
       .send({ message: "An error has occurred on the server." });
   }

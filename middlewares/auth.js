@@ -21,7 +21,7 @@ const auth = (req, res, next) => {
     req.user = payload;
 
     // Proceed to the next middleware or route handler
-    next();
+    return next();
   } catch (err) {
     console.error("Authorization Error:", err.message);
     return res.status(UNAUTHORIZED).send({ message: "Invalid token" });
