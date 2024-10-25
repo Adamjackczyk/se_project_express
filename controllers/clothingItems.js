@@ -36,6 +36,8 @@ const createItem = async (req, res) => {
     });
     await clothingItem.save();
 
+    await clothingItem.populate("owner", "name avatar");
+
     res.status(201).send(clothingItem);
   } catch (err) {
     console.error(err);
