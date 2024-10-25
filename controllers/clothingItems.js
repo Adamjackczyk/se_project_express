@@ -7,7 +7,8 @@ const {
   FORBIDDEN,
 } = require("../utils/errors");
 
-// Controller to get all clothing items
+// controllers/clothingItems.js
+
 const getItems = async (req, res) => {
   try {
     const items = await ClothingItem.find()
@@ -121,7 +122,10 @@ const likeItem = async (req, res) => {
       itemId,
       { $addToSet: { likes: userId } },
       { new: true }
-    ).orFail(new Error("Clothing item not found"));
+    )
+      .populate("likes", "name avatar") // Populate likes with name and avatar
+      .populate("owner", "name avatar") // Optional: populate owner if needed
+      .orFail(new Error("Clothing item not found"));
 
     res.status(200).send(updatedItem);
   } catch (err) {
@@ -147,7 +151,10 @@ const dislikeItem = async (req, res) => {
       itemId,
       { $pull: { likes: userId } },
       { new: true }
-    ).orFail(new Error("Clothing item not found"));
+    )
+      .populate("likes", "name avatar") // Populate likes with name and avatar
+      .populate("owner", "name avatar") // Optional: populate owner if needed
+      .orFail(new Error("Clothing item not found"));
 
     res.status(200).send(updatedItem);
   } catch (err) {
