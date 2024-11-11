@@ -1,15 +1,15 @@
-const BAD_REQUEST = 400;
-const UNAUTHORIZED = 401;
-const FORBIDDEN = 403;
-const NOT_FOUND = 404;
-const CONFLICT = 409;
-const INTERNAL_SERVER_ERROR = 500;
+const BadRequestError = require("../middlewares/errors/bad-request-err");
+const UnauthorizedError = require("../middlewares/errors/unauthorized-err");
+const ForbiddenError = require("../middlewares/errors/forbidden-err");
+const NotFoundError = require("../middlewares/errors/not-found-err");
+const ConflictError = require("../middlewares/errors/conflict-err");
+const InternalServerError = require("../middlewares/errors/internal-server-err");
 
 module.exports = {
-  BAD_REQUEST,
-  UNAUTHORIZED,
-  FORBIDDEN,
-  NOT_FOUND,
-  CONFLICT,
-  INTERNAL_SERVER_ERROR,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
 };

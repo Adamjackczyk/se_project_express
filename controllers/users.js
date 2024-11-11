@@ -1,24 +1,27 @@
+// controllers/users.js
+
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
 const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-  CONFLICT,
-  UNAUTHORIZED,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
 } = require("../utils/errors");
 
-// Controller to create a new user
-const createUser = async (req, res) => {
+/**
+ * Controller to create a new user
+ */
+const createUser = async (req, res, next) => {
   try {
     const { name, avatar, email, password } = req.body;
 
     // Check if all required fields are provided
     if (!name || !avatar || !email || !password) {
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "All fields are required" });
+      return next(new BadRequestError("All fields are required"));
     }
 
     // Create a new user instance; password will be hashed by pre-save hook
@@ -43,30 +46,29 @@ const createUser = async (req, res) => {
 
     // Handle duplicate email error (MongoDB error code 11000)
     if (err.code === 11000) {
-      return res.status(CONFLICT).send({ message: "Email already exists" });
+      return next(new ConflictError("Email already exists"));
     }
 
     // Handle validation errors
     if (err.name === "ValidationError") {
-      return res.status(BAD_REQUEST).send({ message: err.message });
+      return next(new BadRequestError(err.message));
     }
 
-    // Handle other server errors
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    // Pass any other errors to the centralized error handler
+    next(new InternalServerError());
   }
 };
 
-const login = async (req, res) => {
+/**
+ * Controller to handle user login
+ */
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     // Input Validation: Check if email and password are provided
     if (!email || !password) {
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "Email and password are required." });
+      return next(new BadRequestError("Email and password are required."));
     }
 
     // Authenticate the user
@@ -86,19 +88,18 @@ const login = async (req, res) => {
 
     // Handle authentication errors
     if (err.message === "Incorrect email or password") {
-      return res
-        .status(UNAUTHORIZED)
-        .send({ message: "Invalid email or password" });
+      return next(new UnauthorizedError("Invalid email or password"));
     }
 
-    // Handle other unexpected errors
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    // Pass any other errors to the centralized error handler
+    next(new InternalServerError());
   }
 };
 
-const getCurrentUser = async (req, res) => {
+/**
+ * Controller to get the current user's profile
+ */
+const getCurrentUser = async (req, res, next) => {
   try {
     // Extract user ID from req.user, set by auth middleware
     const { _id } = req.user;
@@ -107,20 +108,21 @@ const getCurrentUser = async (req, res) => {
     const user = await User.findById(_id).select("-password");
 
     if (!user) {
-      return res.status(NOT_FOUND).send({ message: "User not found" });
+      return next(new NotFoundError("User not found"));
     }
 
     // Send the user data as the response
     return res.status(200).send(user);
   } catch (err) {
     console.error(err);
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    next(new InternalServerError()); // Pass a 500 error to the centralized handler
   }
 };
 
-const updateUser = async (req, res) => {
+/**
+ * Controller to update the current user's profile
+ */
+const updateUser = async (req, res, next) => {
   try {
     const { name, avatar } = req.body;
 
@@ -131,9 +133,7 @@ const updateUser = async (req, res) => {
 
     // Check if there are fields to update
     if (Object.keys(allowedUpdates).length === 0) {
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "No valid fields provided for update." });
+      return next(new BadRequestError("No valid fields provided for update."));
     }
 
     // Find the user by ID and update the allowed fields
@@ -144,18 +144,16 @@ const updateUser = async (req, res) => {
     ).select("-password"); // Exclude the password field
 
     if (!updatedUser) {
-      return res.status(NOT_FOUND).send({ message: "User not found" });
+      return next(new NotFoundError("User not found"));
     }
 
     return res.status(200).send(updatedUser);
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {
-      return res.status(BAD_REQUEST).send({ message: err.message });
+      return next(new BadRequestError(err.message));
     }
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    next(new InternalServerError()); // Pass a 500 error to the centralized error handler
   }
 };
 

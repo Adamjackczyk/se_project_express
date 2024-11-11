@@ -1,15 +1,18 @@
+// controllers/clothingItems.js
+
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-  FORBIDDEN,
+  BadRequestError,
+  NotFoundError,
+  ForbiddenError,
+  InternalServerError,
 } = require("../utils/errors");
 
-// controllers/clothingItems.js
-
-const getItems = async (req, res) => {
+/**
+ * Get all clothing items
+ */
+const getItems = async (req, res, next) => {
   try {
     const items = await ClothingItem.find()
       .populate("owner", "name avatar")
@@ -18,14 +21,14 @@ const getItems = async (req, res) => {
     res.status(200).send(items);
   } catch (err) {
     console.error(err);
-    res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    next(new InternalServerError()); // Pass a 500 error to the centralized handler
   }
 };
 
-// Controller to create a new clothing item
-const createItem = async (req, res) => {
+/**
+ * Controller to create a new clothing item
+ */
+const createItem = async (req, res, next) => {
   try {
     const { name, weather, imageUrl } = req.body;
 
@@ -43,26 +46,23 @@ const createItem = async (req, res) => {
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {
-      res.status(BAD_REQUEST).send({ message: "Invalid data" });
-    } else {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return next(new BadRequestError("Invalid data"));
     }
+    next(new InternalServerError()); // Pass a 500 error to the centralized handler
   }
 };
 
-// Controller to delete a clothing item by ID
-const deleteItem = async (req, res) => {
+/**
+ * Controller to delete a clothing item by ID
+ */
+const deleteItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
 
     // Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(itemId)) {
       console.log("Invalid item ID format:", itemId);
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "Invalid item ID format." });
+      return next(new BadRequestError("Invalid item ID format."));
     }
 
     // Find the clothing item by ID
@@ -70,9 +70,7 @@ const deleteItem = async (req, res) => {
 
     if (!item) {
       console.log("Clothing item not found for ID:", itemId);
-      return res
-        .status(NOT_FOUND)
-        .send({ message: "Clothing item not found." });
+      return next(new NotFoundError("Clothing item not found."));
     }
 
     // Check if the logged-in user is the owner of the item
@@ -80,9 +78,9 @@ const deleteItem = async (req, res) => {
       console.log(
         `User ${req.user._id} does not have permission to delete item ${itemId}`
       );
-      return res
-        .status(FORBIDDEN)
-        .send({ message: "You do not have permission to delete this item." });
+      return next(
+        new ForbiddenError("You do not have permission to delete this item.")
+      );
     }
 
     // Proceed to delete the item
@@ -99,21 +97,18 @@ const deleteItem = async (req, res) => {
 
     // Handle CastError specifically
     if (err.name === "CastError") {
-      console.log("Caught CastError.");
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "Invalid item ID format." });
+      return next(new BadRequestError("Invalid item ID format."));
     }
 
-    return res
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ message: "An error has occurred on the server." });
+    // Pass any other errors to the centralized error handler
+    next(new InternalServerError());
   }
 };
 
-// Controler to handle likes
-
-const likeItem = async (req, res) => {
+/**
+ * Controller to like a clothing item
+ */
+const likeItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
     const userId = req.user._id;
@@ -131,18 +126,19 @@ const likeItem = async (req, res) => {
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
-      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
+      return next(new NotFoundError("Clothing item not found."));
     } else if (err.name === "CastError") {
-      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
+      return next(new BadRequestError("Invalid item ID format."));
     } else {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return next(new InternalServerError());
     }
   }
 };
 
-const dislikeItem = async (req, res) => {
+/**
+ * Controller to dislike a clothing item
+ */
+const dislikeItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
     const userId = req.user._id;
@@ -160,13 +156,11 @@ const dislikeItem = async (req, res) => {
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
-      res.status(NOT_FOUND).send({ message: "Clothing item not found" });
+      return next(new NotFoundError("Clothing item not found."));
     } else if (err.name === "CastError") {
-      res.status(BAD_REQUEST).send({ message: "Invalid item ID format" });
+      return next(new BadRequestError("Invalid item ID format."));
     } else {
-      res
-        .status(INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return next(new InternalServerError());
     }
   }
 };

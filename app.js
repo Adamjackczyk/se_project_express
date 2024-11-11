@@ -1,8 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const { INTERNAL_SERVER_ERROR, NOT_FOUND } = require("./utils/errors");
+const { NOT_FOUND } = require("./utils/errors");
 const indexRouter = require("./routes/index");
+const errorHandler = require("./middlewares/error-handler");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -16,12 +17,7 @@ app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 
-app.use((err, req, res) => {
-  console.error(err);
-  res
-    .status(INTERNAL_SERVER_ERROR)
-    .send({ message: "An error has occurred on the server." });
-});
+app.use(errorHandler);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
