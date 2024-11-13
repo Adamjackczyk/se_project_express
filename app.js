@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const { NOT_FOUND } = require("./utils/errors");
 const indexRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
@@ -16,6 +17,7 @@ app.use("/", indexRouter);
 app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
+app.use(errors());
 
 app.use(errorHandler);
 
