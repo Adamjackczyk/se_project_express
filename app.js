@@ -5,10 +5,12 @@ const { errors } = require("celebrate");
 const { NOT_FOUND } = require("./utils/errors");
 const indexRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 
+app.use(requestLogger);
 app.use(express.json());
 app.use(cors());
 app.use("/", indexRouter);
@@ -18,7 +20,7 @@ app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Requested resource not found" });
 });
 app.use(errors());
-
+app.use(errorLogger);
 app.use(errorHandler);
 
 mongoose
