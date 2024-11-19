@@ -6,7 +6,6 @@ const User = require("../models/user");
 const {
   BadRequestError,
   UnauthorizedError,
-  ForbiddenError,
   NotFoundError,
   ConflictError,
   InternalServerError,
@@ -55,7 +54,7 @@ const createUser = async (req, res, next) => {
     }
 
     // Pass any other errors to the centralized error handler
-    next(new InternalServerError());
+    return next(new InternalServerError());
   }
 };
 
@@ -92,7 +91,7 @@ const login = async (req, res, next) => {
     }
 
     // Pass any other errors to the centralized error handler
-    next(new InternalServerError());
+    return next(new InternalServerError());
   }
 };
 
@@ -115,7 +114,7 @@ const getCurrentUser = async (req, res, next) => {
     return res.status(200).send(user);
   } catch (err) {
     console.error(err);
-    next(new InternalServerError()); // Pass a 500 error to the centralized handler
+    return next(new InternalServerError());
   }
 };
 
@@ -153,7 +152,7 @@ const updateUser = async (req, res, next) => {
     if (err.name === "ValidationError") {
       return next(new BadRequestError(err.message));
     }
-    next(new InternalServerError()); // Pass a 500 error to the centralized error handler
+    return next(new InternalServerError());
   }
 };
 

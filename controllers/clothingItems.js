@@ -15,10 +15,10 @@ const {
 const getItems = async (req, res, next) => {
   try {
     const items = await ClothingItem.find(); // Removed .populate("owner", "name avatar")
-    res.status(200).send(items);
+    return res.status(200).send(items);
   } catch (err) {
     console.error(err);
-    next(new InternalServerError());
+    return next(new InternalServerError());
   }
 };
 
@@ -37,13 +37,13 @@ const createItem = async (req, res, next) => {
     });
     await clothingItem.save();
 
-    res.status(201).send(clothingItem);
+    return res.status(201).send(clothingItem);
   } catch (err) {
     console.error(err);
     if (err.name === "ValidationError") {
       return next(new BadRequestError("Invalid data"));
     }
-    next(new InternalServerError());
+    return next(new InternalServerError());
   }
 };
 
@@ -96,7 +96,7 @@ const deleteItem = async (req, res, next) => {
     }
 
     // Pass any other errors to the centralized error handler
-    next(new InternalServerError());
+    return next(new InternalServerError());
   }
 };
 
@@ -114,7 +114,7 @@ const likeItem = async (req, res, next) => {
       { new: true }
     ).orFail(new Error("Clothing item not found"));
 
-    res.status(200).send(updatedItem);
+    return res.status(200).send(updatedItem);
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
@@ -141,7 +141,7 @@ const dislikeItem = async (req, res, next) => {
       { new: true }
     ).orFail(new Error("Clothing item not found"));
 
-    res.status(200).send(updatedItem);
+    return res.status(200).send(updatedItem);
   } catch (err) {
     console.error(err);
     if (err.message === "Clothing item not found") {
