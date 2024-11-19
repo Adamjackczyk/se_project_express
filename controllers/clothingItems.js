@@ -14,14 +14,11 @@ const {
  */
 const getItems = async (req, res, next) => {
   try {
-    const items = await ClothingItem.find()
-      .populate("owner", "name avatar")
-      .populate("likes", "name avatar");
-
+    const items = await ClothingItem.find(); // Removed .populate("owner", "name avatar")
     res.status(200).send(items);
   } catch (err) {
     console.error(err);
-    next(new InternalServerError()); // Pass a 500 error to the centralized handler
+    next(new InternalServerError());
   }
 };
 
@@ -36,11 +33,9 @@ const createItem = async (req, res, next) => {
       name,
       weather,
       imageUrl,
-      owner: req.user._id, // Assign owner from middleware
+      owner: req.user._id.toString(), // Assign owner as string (user ID)
     });
     await clothingItem.save();
-
-    await clothingItem.populate("owner", "name avatar");
 
     res.status(201).send(clothingItem);
   } catch (err) {
@@ -48,7 +43,7 @@ const createItem = async (req, res, next) => {
     if (err.name === "ValidationError") {
       return next(new BadRequestError("Invalid data"));
     }
-    next(new InternalServerError()); // Pass a 500 error to the centralized handler
+    next(new InternalServerError());
   }
 };
 
@@ -74,7 +69,7 @@ const deleteItem = async (req, res, next) => {
     }
 
     // Check if the logged-in user is the owner of the item
-    if (item.owner.toString() !== req.user._id) {
+    if (item.owner !== req.user._id.toString()) {
       console.log(
         `User ${req.user._id} does not have permission to delete item ${itemId}`
       );
@@ -111,16 +106,13 @@ const deleteItem = async (req, res, next) => {
 const likeItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user._id.toString();
 
     const updatedItem = await ClothingItem.findByIdAndUpdate(
       itemId,
       { $addToSet: { likes: userId } },
       { new: true }
-    )
-      .populate("likes", "name avatar") // Populate likes with name and avatar
-      .populate("owner", "name avatar") // Optional: populate owner if needed
-      .orFail(new Error("Clothing item not found"));
+    ).orFail(new Error("Clothing item not found"));
 
     res.status(200).send(updatedItem);
   } catch (err) {
@@ -141,16 +133,13 @@ const likeItem = async (req, res, next) => {
 const dislikeItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user._id.toString();
 
     const updatedItem = await ClothingItem.findByIdAndUpdate(
       itemId,
       { $pull: { likes: userId } },
       { new: true }
-    )
-      .populate("likes", "name avatar") // Populate likes with name and avatar
-      .populate("owner", "name avatar") // Optional: populate owner if needed
-      .orFail(new Error("Clothing item not found"));
+    ).orFail(new Error("Clothing item not found"));
 
     res.status(200).send(updatedItem);
   } catch (err) {
