@@ -119,11 +119,11 @@ const likeItem = async (req, res, next) => {
     console.error(err);
     if (err.message === "Clothing item not found") {
       return next(new NotFoundError("Clothing item not found."));
-    } else if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid item ID format."));
-    } else {
-      return next(new InternalServerError());
     }
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid item ID format."));
+    }
+    return next(new InternalServerError());
   }
 };
 
@@ -146,11 +146,11 @@ const dislikeItem = async (req, res, next) => {
     console.error(err);
     if (err.message === "Clothing item not found") {
       return next(new NotFoundError("Clothing item not found."));
-    } else if (err.name === "CastError") {
-      return next(new BadRequestError("Invalid item ID format."));
-    } else {
-      return next(new InternalServerError());
     }
+    if (err.name === "CastError") {
+      return next(new BadRequestError("Invalid item ID format."));
+    }
+    return next(new InternalServerError());
   }
 };
 
