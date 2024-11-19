@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const { errors } = require("celebrate");
-const { NOT_FOUND } = require("./utils/errors");
+const { NotFoundError } = require("./utils/errors");
 const indexRouter = require("./routes/index");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
@@ -18,11 +18,11 @@ app.use(cors());
 app.use("/", indexRouter);
 
 // Handle non-existent resources
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: "Requested resource not found" });
+app.use((req, res, next) => {
+  next(new NotFoundError("Requested resource not found"));
 });
-app.use(errors());
 app.use(errorLogger);
+app.use(errors());
 app.use(errorHandler);
 
 mongoose
