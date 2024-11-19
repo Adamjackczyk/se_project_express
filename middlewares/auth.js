@@ -1,13 +1,24 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { UNAUTHORIZED } = require("../utils/errors");
+const { UnauthorizedError } = require("../utils/errors");
 
+/**
+ * Authentication Middleware
+ *
+ * Verifies the JWT token provided in the Authorization header.
+ * If valid, attaches the payload to req.user and proceeds.
+ * If invalid or missing, throws an UnauthorizedError.
+ *
+ * @param {object} req - The Express request object.
+ * @param {object} res - The Express response object.
+ * @param {function} next - The next middleware function.
+ */
 const auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   // Check if the Authorization header is present and starts with 'Bearer '
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(UNAUTHORIZED).send({ message: "Authorization required" });
+    return next(new UnauthorizedError("Authorization required"));
   }
 
   // Extract the token by removing 'Bearer ' prefix
@@ -24,7 +35,7 @@ const auth = (req, res, next) => {
     return next();
   } catch (err) {
     console.error("Authorization Error:", err.message);
-    return res.status(UNAUTHORIZED).send({ message: "Invalid token" });
+    return next(new UnauthorizedError("Invalid token"));
   }
 };
 
