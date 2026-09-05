@@ -31,19 +31,13 @@ The WTWR Back End leverages a suite of modern technologies and best practices to
 
 `npm run dev` — to launch the server with the hot reload feature
 
-Deployment
-The WTWR application is deployed across multiple domains to separate frontend and backend functionalities, ensuring scalability and maintainability.
+### Deployment
 
-Backend API:
-api.wtwr.fated.net
-This domain hosts the Express.js backend server, handling all API requests, user authentication, and data management.
+WTWR was previously deployed with separate frontend and backend services. The original deployment has been retired, and its custom domain is no longer maintained.
 
-Frontend Application:
-wtwr.farted.net
-www.wtwr.farted.net
-These domains host the React.js frontend application, providing users with an interactive interface to manage their profiles, clothing items, and view weather-based suggestions.
-
-Note: Ensure that DNS settings are correctly configured to point these domains to your respective frontend and backend servers. Additionally, SSL certificates should be properly installed to enable secure HTTPS connections.
+Source code remains available:
+- [React frontend](https://github.com/Adamjackczyk/se_project_react)
+- [Express backend](https://github.com/Adamjackczyk/se_project_express)
 
 ### Testing
 
